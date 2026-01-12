@@ -3,14 +3,21 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun run build:ts && bun run build:assets",
-    "build:ts": "bun build src/background.ts src/popup.ts src/content.ts --outdir dist --target browser",
-    "build:assets": "cp manifest.json popup.html dist/ && cp -r icons dist/",
-    "dev": "bun run build --watch"
+    "dev": "vite",
+    "build": "vite build"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/chrome": "^0.1.33",
+    "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@crxjs/vite-plugin": "^2.3.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "vite": "^7.3.1"
   }
 }
