@@ -3,9 +3,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "bun run build:background && bun run build:popup",
+    "build": "bun run build:background && bun run build:popup && bun run build:content",
     "build:background": "bun build src/background.ts --outdir . --target browser",
     "build:popup": "bun build src/popup.ts --outdir . --target browser",
+    "build:content": "bun build src/content.ts --outdir . --target browser",
     "dev": "bun run build --watch"
   },
   "devDependencies": {

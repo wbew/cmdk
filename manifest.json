@@ -21,5 +21,19 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "content_scripts": []
+  "commands": {
+    "toggle-cmdk": {
+      "suggested_key": {
+        "default": "Ctrl+K",
+        "mac": "Command+K"
+      },
+      "description": "Toggle CMD+K command palette"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
 }
