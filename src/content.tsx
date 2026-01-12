@@ -7,13 +7,13 @@ const styles = `
 }
 
 #cmdk-overlay {
-  --cmdk-bg: rgba(22, 22, 22, 0.95);
-  --cmdk-border: rgba(255, 255, 255, 0.15);
-  --cmdk-text: #ffffff;
-  --cmdk-text-secondary: rgba(255, 255, 255, 0.5);
-  --cmdk-accent: #7c5cff;
-  --cmdk-input-bg: rgba(255, 255, 255, 0.06);
-  --cmdk-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+  --cmdk-bg: rgba(255, 255, 255, 0.98);
+  --cmdk-border: rgba(0, 0, 0, 0.08);
+  --cmdk-text: #1a1a1a;
+  --cmdk-text-secondary: rgba(0, 0, 0, 0.45);
+  --cmdk-accent: #ff6363;
+  --cmdk-input-bg: rgba(0, 0, 0, 0.04);
+  --cmdk-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   --cmdk-radius: 12px;
 
   position: fixed;
@@ -79,7 +79,7 @@ const styles = `
 }
 
 .cmdk-input:focus {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.06);
 }
 
 .cmdk-content {
@@ -127,7 +127,7 @@ const styles = `
   padding: 0 6px;
   font-size: 11px;
   font-family: inherit;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   border: 1px solid var(--cmdk-border);
   border-radius: 4px;
   color: var(--cmdk-text-secondary);
@@ -142,12 +142,12 @@ const styles = `
 }
 
 .cmdk-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.12);
   border-radius: 4px;
 }
 
 .cmdk-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.2);
 }
 `;
 
@@ -166,11 +166,18 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
     }
   }, [visible]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      onClose();
-    }
-  };
+  useEffect(() => {
+    if (!visible) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [visible, onClose]);
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -183,7 +190,6 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
       id="cmdk-overlay"
       className={visible ? "visible" : ""}
       onClick={handleOverlayClick}
-      onKeyDown={handleKeyDown}
     >
       <div className="cmdk-modal">
         <div className="cmdk-header">
@@ -241,7 +247,7 @@ function App() {
 // Mount React app in shadow DOM for style isolation
 const host = document.createElement("div");
 host.id = "cmdk-root";
-const shadow = host.attachShadow({ mode: "open" });
+const shadow = host.attachShadow({ mode: "open", delegatesFocus: true });
 
 const styleEl = document.createElement("style");
 styleEl.textContent = styles;
