@@ -200,6 +200,47 @@ const styles = `
 }
 `;
 
+// Highlight styles injected into main document (outside shadow DOM)
+const highlightStyles = `
+#cmdk-highlight {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(255, 99, 99, 0.15);
+  border: 2px solid rgba(255, 99, 99, 0.8);
+  border-radius: 4px;
+  z-index: 2147483646;
+  transition: all 0.15s ease-out;
+  opacity: 0;
+}
+
+#cmdk-highlight.visible {
+  opacity: 1;
+}
+`;
+
+// Create highlight element in main document (outside shadow DOM)
+const highlightEl = document.createElement("div");
+highlightEl.id = "cmdk-highlight";
+document.body.appendChild(highlightEl);
+
+const highlightStyleEl = document.createElement("style");
+highlightStyleEl.textContent = highlightStyles;
+document.head.appendChild(highlightStyleEl);
+
+function updateHighlight(element: HTMLElement | null) {
+  if (!element) {
+    highlightEl.classList.remove("visible");
+    return;
+  }
+
+  const rect = element.getBoundingClientRect();
+  highlightEl.style.top = `${rect.top}px`;
+  highlightEl.style.left = `${rect.left}px`;
+  highlightEl.style.width = `${rect.width}px`;
+  highlightEl.style.height = `${rect.height}px`;
+  highlightEl.classList.add("visible");
+}
+
 interface CommandPaletteProps {
   visible: boolean;
   onClose: () => void;
@@ -237,6 +278,23 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
   useEffect(() => {
     setSelectedIndex(0);
   }, [query]);
+
+  // Update highlight when selection changes (keyboard or mouse)
+  useEffect(() => {
+    const selectedAction = filteredActions[selectedIndex];
+    if (selectedAction && visible) {
+      updateHighlight(selectedAction.element);
+    } else {
+      updateHighlight(null);
+    }
+  }, [selectedIndex, filteredActions, visible]);
+
+  // Clear highlight when palette closes
+  useEffect(() => {
+    if (!visible) {
+      updateHighlight(null);
+    }
+  }, [visible]);
 
   // Scan DOM when palette opens
   useEffect(() => {
