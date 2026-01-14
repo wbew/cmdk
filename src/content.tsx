@@ -218,7 +218,10 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
       setActions(scanned);
       setQuery("");
       setSelectedIndex(0);
-      inputRef.current?.focus();
+      // Use requestAnimationFrame to ensure DOM is ready before focusing
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
     }
   }, [visible]);
 
@@ -337,18 +340,38 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
 
 function App() {
   const [visible, setVisible] = useState(false);
+  const visibleRef = useRef(visible);
+  const lastToggleRef = useRef(0);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    visibleRef.current = visible;
+  }, [visible]);
+
+  // Debounced toggle to prevent double-firing from both DOM and Chrome commands
+  const toggle = () => {
+    const now = Date.now();
+    if (now - lastToggleRef.current < 100) return; // Ignore if within 100ms
+    lastToggleRef.current = now;
+    setVisible((v) => !v);
+  };
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setVisible((v) => !v);
+    const handleMessage = (message: { action: string }) => {
+      if (message.action === "toggle-cmdk") {
+        toggle();
       }
     };
 
-    const handleMessage = (message: { action: string }) => {
-      if (message.action === "toggle-cmdk") {
-        setVisible((v) => !v);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+K to toggle
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        toggle();
+      }
+      // Escape to close
+      if (e.key === "Escape" && visibleRef.current) {
+        setVisible(false);
       }
     };
 

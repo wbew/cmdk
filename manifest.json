@@ -27,7 +27,7 @@
         "default": "Ctrl+K",
         "mac": "Command+K"
       },
-      "description": "Toggle CMD+K command palette"
+      "description": "Toggle the command palette"
     }
   },
   "content_scripts": [
