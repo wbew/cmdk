@@ -218,11 +218,31 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
       setActions(scanned);
       setQuery("");
       setSelectedIndex(0);
-      // Use requestAnimationFrame to ensure DOM is ready before focusing
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
     }
+  }, [visible]);
+
+  // Focus input when palette opens - retry until it works
+  useEffect(() => {
+    if (!visible) return;
+
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const tryFocus = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Check if focus worked (either in main document or shadow root)
+        const shadowRoot = inputRef.current.getRootNode() as ShadowRoot;
+        if (shadowRoot.activeElement === inputRef.current) {
+          return; // Success
+        }
+      }
+      if (attempts++ < maxAttempts) {
+        requestAnimationFrame(tryFocus);
+      }
+    };
+
+    requestAnimationFrame(tryFocus);
   }, [visible]);
 
   // Scroll selected item into view
