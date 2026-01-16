@@ -323,6 +323,59 @@ const styles = `
 .cmdk-content::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
 }
+
+.cmdk-minimap {
+  position: fixed;
+  top: 50%;
+  left: calc(50% + 336px);
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--cmdk-bg);
+  border: 1px solid var(--cmdk-border);
+  border-radius: var(--cmdk-radius);
+  box-shadow: var(--cmdk-shadow);
+  pointer-events: none;
+  z-index: 2147483647;
+}
+
+.cmdk-minimap-page {
+  position: relative;
+  width: 24px;
+  height: 160px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--cmdk-border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cmdk-minimap-viewport {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.cmdk-minimap-element {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  background: var(--cmdk-accent);
+  border-radius: 1px;
+  min-height: 3px;
+}
+
+.cmdk-minimap-label {
+  font-size: 10px;
+  color: var(--cmdk-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 `;
 
 // Highlight styles injected into main document (outside shadow DOM)
@@ -391,6 +444,7 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
     isLoading: false,
     error: null,
   });
+
 
   // Get current actions (either from chain level or local scan)
   const currentSerializedActions = useMemo(() => {
@@ -679,6 +733,13 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
       } else {
         onClose();
       }
+    } else if (e.key === " " && !currentSerializedActions) {
+      // Space to scroll to element (only for local actions)
+      e.preventDefault();
+      const action = filteredActions[selectedIndex] as ActionItem | undefined;
+      if (action && "element" in action) {
+        action.element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
     }
   };
 
@@ -810,12 +871,76 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
     return items;
   };
 
+  // Render minimap sidebar showing element location context (auto-appears for local actions)
+  const renderMinimap = () => {
+    // Only show for local actions (not chain/future actions)
+    if (currentSerializedActions) return null;
+
+    const selectedAction = filteredActions[selectedIndex] as ActionItem | undefined;
+    if (!selectedAction || !("element" in selectedAction)) return null;
+
+    const element = selectedAction.element;
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const pageHeight = document.documentElement.scrollHeight;
+
+    // Minimap height
+    const minimapHeight = 160;
+
+    // Calculate element's absolute position on page
+    const elementAbsY = rect.top + window.scrollY;
+
+    // Create a minimap-style view showing where the element is on the page
+    const scale = minimapHeight / Math.max(pageHeight, viewportHeight);
+    const viewportIndicatorHeight = Math.max(viewportHeight * scale, 16);
+    const viewportIndicatorTop = window.scrollY * scale;
+
+    // Element indicator position in the minimap
+    const elementIndicatorTop = elementAbsY * scale;
+    const elementIndicatorHeight = Math.max(rect.height * scale, 3);
+
+    // Determine which region of the page the element is in
+    const getRegion = () => {
+      const relativeY = elementAbsY / pageHeight;
+      if (relativeY < 0.15) return "Top";
+      if (relativeY < 0.4) return "Upper";
+      if (relativeY < 0.6) return "Middle";
+      if (relativeY < 0.85) return "Lower";
+      return "Bottom";
+    };
+
+    return (
+      <div className="cmdk-minimap">
+        <div className="cmdk-minimap-page">
+          {/* Viewport indicator */}
+          <div
+            className="cmdk-minimap-viewport"
+            style={{
+              top: viewportIndicatorTop,
+              height: viewportIndicatorHeight,
+            }}
+          />
+          {/* Element indicator */}
+          <div
+            className="cmdk-minimap-element"
+            style={{
+              top: elementIndicatorTop,
+              height: elementIndicatorHeight,
+            }}
+          />
+        </div>
+        <div className="cmdk-minimap-label">{getRegion()}</div>
+      </div>
+    );
+  };
+
   return (
     <div
       id="cmdk-overlay"
       className={visible ? "visible" : ""}
       onClick={handleOverlayClick}
     >
+      {renderMinimap()}
       <div className="cmdk-modal" onKeyDown={handleKeyDown}>
         {renderBreadcrumbs()}
         <div className="cmdk-header">
@@ -855,6 +980,10 @@ function CommandPalette({ visible, onClose }: CommandPaletteProps) {
               </>
             ) : (
               <>
+                <span className="cmdk-hint-item">
+                  <kbd>␣</kbd>
+                  focus
+                </span>
                 <span className="cmdk-hint-item">
                   <kbd>Tab</kbd>
                   queue

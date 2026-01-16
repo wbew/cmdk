@@ -1,5 +1,24 @@
 # TODO
 
+## Future Features
+
+### AI-Generated Descriptions
+- Send DOM context around an action to an LLM to generate a one-line description of what it likely does
+- Useful when labels are vague or missing context
+- Could cache descriptions per selector/URL pattern
+
+### Smart Grouping
+- Group actions by page region (header, sidebar, main content, footer)
+- Or by semantic purpose (navigation, forms, social, etc.)
+- Makes long lists easier to scan
+
+### Recent/Frequent Actions
+- Track which actions users execute on a site
+- Surface frequently used actions first
+- Could be per-domain or global
+
+---
+
 ## Code Smells to Revisit
 
 ### Focus Management
