@@ -5,7 +5,7 @@ node_modules
 out
 dist
 *.tgz
-scripts/experiment-label/output/
+cmdk/scripts/experiment-label/output/
 
 # code coverage
 coverage
