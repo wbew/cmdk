@@ -16,6 +16,12 @@ Use `bun` instead of `npm` for all commands (e.g., `bun run build`, `bun install
 - Split files only when there's a clear, demonstrated need
 - Add TODOs to `TODO.md`, not as inline comments
 
+## Keyboard Shortcuts
+
+- Prefer `Shift+<key>` over system-conflicting shortcuts like `Cmd+Space`
+- Use explicit modifier checks (`e.shiftKey`) for intentional gestures
+- Always update UI hints (footer text) when changing keybindings
+
 ## Environment Variables
 
 - Store API keys in environment variables (e.g., `GEMINI_API_KEY` via `process.env`)
